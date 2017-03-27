@@ -1,0 +1,12 @@
+.nuget/
+packages/
+*/obj/
+*/bin/
+
+*.suo
+*.exe
+*.dll
+*.lib
+*.db
+*.pdb
+
