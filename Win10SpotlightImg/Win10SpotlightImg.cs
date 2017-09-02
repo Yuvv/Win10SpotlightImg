@@ -20,6 +20,11 @@ namespace Win10SpotlightImg {
         private SQLiteCommand cmd;
 
         private void loadImage() {
+            if (imgList.Count == 0) {
+                MessageBox.Show("没有更多图片(⊙﹏⊙)！", "注意(⊙﹏⊙)");
+                imgContainer.Image = imgContainer.ErrorImage;
+                return;
+            }
             try {
                 imgContainer.Load(baseDir + imgList[curPos]);
             } catch (Exception) {
@@ -132,6 +137,10 @@ namespace Win10SpotlightImg {
         }
 
         private void btnHeartbreak_Click(object sender, EventArgs e) {
+            if (imgList.Count == 0) {
+                MessageBox.Show("没有更多图片(⊙﹏⊙)！", "注意(⊙﹏⊙)");
+                return;
+            }
             cmd.CommandText = string.Format("update imgs set viewed=1 where imgid=\'{0}\'", imgList[curPos]);
             cmd.ExecuteNonQuery();
             imgList.RemoveAt(curPos);
@@ -140,6 +149,10 @@ namespace Win10SpotlightImg {
         }
 
         private void btnLove_Click(object sender, EventArgs e) {
+            if (imgList.Count == 0) {
+                MessageBox.Show("没有更多图片(⊙﹏⊙)！", "注意(⊙﹏⊙)");
+                return;
+            }
             File.Copy(baseDir + imgList[curPos], targetDir + imgList[curPos] + ".jpg", true);
             cmd.CommandText = string.Format("update imgs set loved=1,viewed=1 where imgid=\'{0}\'", imgList[curPos]);
             cmd.ExecuteNonQuery();
