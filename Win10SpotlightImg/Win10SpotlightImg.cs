@@ -26,7 +26,7 @@ namespace Win10SpotlightImg {
                 return;
             }
             try {
-                imgContainer.Load(baseDir + imgList[curPos]);
+                imgContainer.Load(Path.Combine(baseDir, imgList[curPos]));
             } catch (Exception) {
                 imgContainer.Image = imgContainer.ErrorImage;
             }
@@ -56,10 +56,18 @@ namespace Win10SpotlightImg {
             cmd.CommandText = "create table if not exists imgs(imgid char(64), loved bool default false, viewed bool default false);";
             cmd.ExecuteNonQuery();
 
+            string basedir = string.Format(@"C:\Users\{0}\AppData\Local\Packages", Environment.UserName);
+            if (Directory.Exists(basedir)) {
+                string[] dirs = Directory.GetDirectories(basedir, "Microsoft.Windows.ContentDeliveryManager_*");
+                if (dirs.Length > 0) {
+                    basedir = Path.Combine(dirs[0], @"LocalState\Assets");
+                }
+            }
+            Directory.CreateDirectory(@".\_img");
             try {
                 cmd.CommandText = "create table if not exists settings" +
                 "(id int primary key, basedir text, targetdir text, win_w int default 1024, win_h int default 576);" +
-                "insert into settings (id, basedir, targetdir) values (0, \'.\\\', \'.\\\');";
+                "insert into settings (id, basedir, targetdir) values (0, \'" + basedir + "\', \'.\\_img\\\');";
                 cmd.ExecuteNonQuery();
             } catch (SQLiteException) {
                 // TODO: do nothing?
@@ -153,7 +161,9 @@ namespace Win10SpotlightImg {
                 MessageBox.Show("没有更多图片(⊙﹏⊙)！", "注意(⊙﹏⊙)");
                 return;
             }
-            File.Copy(baseDir + imgList[curPos], targetDir + imgList[curPos] + ".jpg", true);
+            File.Copy(Path.Combine(baseDir, imgList[curPos]),
+                      Path.Combine(targetDir, imgList[curPos] + ".jpg"),
+                      true);
             cmd.CommandText = string.Format("update imgs set loved=1,viewed=1 where imgid=\'{0}\'", imgList[curPos]);
             cmd.ExecuteNonQuery();
             imgList.RemoveAt(curPos);
@@ -174,7 +184,7 @@ namespace Win10SpotlightImg {
             dlg.Description = "Set Spotlight Image Folder";
             dlg.RootFolder = Environment.SpecialFolder.UserProfile;
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                baseDir = dlg.SelectedPath + "\\";
+                baseDir = dlg.SelectedPath;
                 cmd.CommandText = string.Format("update settings set basedir=\'{0}\' where id=0;", baseDir);
                 cmd.ExecuteNonQuery();
 
@@ -188,7 +198,7 @@ namespace Win10SpotlightImg {
             FolderBrowserDialog dlg = new FolderBrowserDialog();
             dlg.Description = "Set Target Image Folder";
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                targetDir = dlg.SelectedPath + "\\";
+                targetDir = dlg.SelectedPath;
                 cmd.CommandText = string.Format("update settings set targetdir=\'{0}\' where id=0;", targetDir);
                 cmd.ExecuteNonQuery();
             }
